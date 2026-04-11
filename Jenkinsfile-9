@@ -1,7 +1,8 @@
 pipeline {
-  agent any 
+  agent any
+
   parameters {
-    string(name: "App_Version", description: "provide application version")
+     string(name: "App_Version", description: "provide application version")
   }
 
   environment {
@@ -9,17 +10,17 @@ pipeline {
   }
 
   stages {
-    stage("Repo Clone") {
+    stage("Checkout") {
       steps {
-        checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/shivagande26/DataStore.git']])
+        checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Ritikrpati23032003/DataStore.git']])
       }
     }
     stage("Maven Build") {
       steps {
         sh """
-            echo "-------- Building Application --------"
-            mvn clean package
-            echo "------- Application Built Successfully --------"
+          echo "-------- Building Application --------"
+          mvn clean package
+          echo "------- Application Built Successfully --------"
         """
       }
     }
@@ -36,7 +37,7 @@ pipeline {
       steps {
         sh """
           echo "-------- Pushing Artifacts To S3 --------"
-          aws s3 cp ./target/*.jar s3://datastore-artefact-store-apps-jenkins/
+          aws s3 cp ./target/*.jar s3://datastore-artefact-store-jenkins-apps/
           echo "-------- Pushing Artifacts To S3 Completed --------"
         """
       }
@@ -68,7 +69,7 @@ pipeline {
         """
       }
     }
-    stage("Loggingin & Pushing Docker image") {
+    stage("Loggingin & Pushing Docker Image") {
       steps {
         sh """
           echo "-------- Logging To DockerHub --------"
@@ -81,7 +82,7 @@ pipeline {
         """
       }
     }
-    stage("cleanup") {
+    stage("Cleanup") {
       steps {
         sh """
            echo "-------- Cleaning Up Jenkins Machine --------"
@@ -92,12 +93,7 @@ pipeline {
     }
     stage("Deployment Acceptance") {
       steps {
-        input 'Trigger Down Stream Job'
-      }
-    }
-    stage("Triggering Deployment Job") {
-      steps {
-        build job: "KubernetesDeployment", parameters: [string(name: "App_Name", value: "datastore-deploy"), string(name: "App_Version", value: "${params.App_Version}")]
+        input 'Trigger Down Stream Job??'
       }
     }
   }
